@@ -91,14 +91,17 @@
       <HintPath>..\packages\Be.Windows.Forms.HexBox.1.6.1\lib\net40\Be.Windows.Forms.HexBox.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="FastColoredTextBox">
-      <HintPath>bin\Debug\Assemblies\FastColoredTextBox.dll</HintPath>
+    <Reference Include="FastColoredTextBox, Version=2.16.11.0, Culture=neutral, PublicKeyToken=fb8aa12b994ef61b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\x86\Debug\Assemblies\FastColoredTextBox.dll</HintPath>
     </Reference>
-    <Reference Include="HelixToolkit.Wpf">
-      <HintPath>bin\Debug\Assemblies\HelixToolkit.Wpf.dll</HintPath>
+    <Reference Include="HelixToolkit.Wpf, Version=2.20.2.0, Culture=neutral, PublicKeyToken=52aa3500039caf0d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\x86\Debug\Assemblies\HelixToolkit.Wpf.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib">
-      <HintPath>bin\Debug\Assemblies\ICSharpCode.SharpZipLib.dll</HintPath>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=1.0.6056.4235, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\x86\Debug\Assemblies\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.DirectX, Version=1.0.1901.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <SpecificVersion>False</SpecificVersion>
@@ -120,11 +123,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\x86\Debug\Assemblies\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Pfim">
-      <HintPath>bin\Debug\Assemblies\Pfim.dll</HintPath>
+    <Reference Include="Pfim, Version=0.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\x86\Debug\Assemblies\Pfim.dll</HintPath>
     </Reference>
-    <Reference Include="PikIO">
-      <HintPath>bin\Debug\Assemblies\PikIO.dll</HintPath>
+    <Reference Include="PikIO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\x86\Debug\Assemblies\PikIO.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
