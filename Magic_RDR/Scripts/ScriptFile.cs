@@ -1,0 +1,437 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
+using Magic_RDR.Application;
+using static Magic_RDR.RPF6.RPF6TOC;
+
+namespace Magic_RDR
+{
+	public class ScriptFile
+	{
+		private IOReader Reader;
+		private FileEntry Entry;
+		private int ParameterCount, StaticCount, NativeCount;
+		private int StaticPointer;
+		private int[] CodeTablePointers;
+		private int PageCount;
+
+		public static int ReturnType, Attempts;
+		public static bool OpcodeReturn;
+
+		private List<byte> CodeTable = new List<byte>();
+		public List<Function> Functions;
+		public Dictionary<int, FunctionName> FunctionLoc;
+		public NativeTable NativeTable;
+		internal Variables Statics;
+		internal static NativeParamInfo NativeInfo = new NativeParamInfo();
+		public Dictionary<string, Tuple<int, int>> Function_loc = new Dictionary<string, Tuple<int, int>>();
+
+		public ScriptFile(object reader, FileEntry entry)
+		{
+			Reader = (IOReader)reader;
+			Entry = entry;
+		}
+
+		public string ReadMainStructure()
+		{
+			Reader.BaseStream.Position = Entry.FlagInfo.RSC85_ObjectStart;
+			uint magic = Reader.ReadUInt32();
+			int SubHeaderPointer = Reader.ReadOffset(Reader.ReadInt32());
+			int CodePointer = Reader.ReadOffset(Reader.ReadInt32());
+			int CodeLength = Reader.ReadInt32();
+			ParameterCount = Reader.ReadInt32();
+			StaticCount = Reader.ReadInt32();
+			StaticPointer = Reader.ReadOffset(Reader.ReadInt32());
+			int GlobalVersion = Reader.ReadInt32();
+			NativeCount = Reader.ReadOffset(Reader.ReadInt32());
+			int NativePointer = Reader.ReadOffset(Reader.ReadInt32());
+
+			Reader.BaseStream.Seek(CodePointer, SeekOrigin.Begin);
+			PageCount = Reader.GetPageCount(CodeLength);
+			CodeTablePointers = new int[PageCount];
+
+			for (int i = 0; i < PageCount; i++)
+			{
+				CodeTablePointers[i] = Reader.ReadOffset(Reader.ReadInt32());
+			}
+
+			for (int i = 0; i < PageCount; i++)
+			{
+				Reader.BaseStream.Seek(CodeTablePointers[i], SeekOrigin.Begin);
+				long Tablesize = Reader.GetPageLengthAtPage(CodeTablePointers, CodeLength, i);
+
+				byte[] working = new byte[Tablesize];
+				Reader.BaseStream.Read(working, 0, (int)Tablesize);
+				CodeTable.AddRange(working);
+			}
+
+			NativeTable = new NativeTable(Reader, NativePointer, NativeCount);
+			GetStaticInfo();
+			Functions = new List<Function>();
+			FunctionLoc = new Dictionary<int, FunctionName>();
+			GetFunctions();
+
+			for (int i = 0; i < Functions.Count; i++)
+			{
+				try
+				{
+					Functions[i].PreDecode();
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"ERROR when pre-decoding {Functions[i].Name} : {ex.Message}\nStack trace: {ex.StackTrace}");
+				}
+			}
+
+			Statics.CheckVariables();
+			for (int i = 0; i < Functions.Count; i++)
+			{
+				try
+				{
+					Functions[i].Decode();
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine($"ERROR when decoding {Functions[i].Name} : {ex.Message}\nStack trace: {ex.StackTrace}");
+				}
+			}
+
+			int index = 1;
+			StringBuilder fullCode = new StringBuilder();
+			fullCode.AppendLine("//Decompiled with MagicRDR v1.0");
+			fullCode.AppendLine(string.Format("//Function Count : {0}", Functions.Count));
+			fullCode.AppendLine(string.Format("//Statics Count : {0}", StaticCount));
+			fullCode.AppendLine(string.Format("//Natives Count : {0}", NativeCount));
+			fullCode.AppendLine(string.Format("//Parameters Count : {0}\n", ParameterCount));
+			fullCode.AppendLine("#region Local Var");
+			index++;
+
+			try
+			{
+				foreach (string statics in Statics.GetDeclaration(false))
+				{
+					fullCode.AppendLine("\t" + statics);
+					index++;
+				}
+			}
+			catch { }
+			fullCode.AppendLine("#endregion\n");
+			index += 2;
+
+			foreach (Function f in Functions)
+			{
+				try
+				{
+					string s = f.ToString();
+					fullCode.AppendLine(s);
+					Function_loc.Add(f.Name, new Tuple<int, int>(index, f.Location));
+					index += f.LineCount;
+				}
+				catch { }
+			}
+
+			return fullCode.ToString();
+		}
+
+		private void GetStaticInfo()
+		{
+			Statics = new Variables(Variables.ListType.Statics);
+			Statics.SetScriptParamCount(ParameterCount);
+
+			Reader.BaseStream.Seek(StaticPointer, SeekOrigin.Begin);
+			for (int count = 0; count < StaticCount; count++)
+			{
+				Statics.AddVar(Reader.ReadInt32());
+			}
+		}
+
+		void GetFunctions()
+		{
+			int returnpos = -3;
+			int offset = 0;
+
+			while (offset < CodeTable.Count)
+			{
+				switch (CodeTable[offset])
+				{
+					case 37: offset += 1; break;
+					case 38: offset += 2; break;
+					case 39: offset += 3; break;
+					case 40: offset += 4; break;
+					case 41: offset += 4; break;
+					case 44: offset += 2; break;
+					case 45: try { AddFunction(offset, returnpos + 3); Attempts++; offset += CodeTable[offset + 4] + 4; } catch { } break;
+					case 46: returnpos = offset; offset += 2; break;
+					case 52:
+					case 53:
+					case 54:
+					case 55:
+					case 56:
+					case 57:
+					case 58:
+					case 59:
+					case 60:
+					case 61:
+					case 62:
+					case 63:
+					case 64: offset += 1; break;
+					case 65:
+					case 66:
+					case 67:
+					case 68:
+					case 69:
+					case 70:
+					case 71:
+					case 72:
+					case 73:
+					case 74:
+					case 75:
+					case 76:
+					case 77:
+					case 78:
+					case 79:
+					case 80:
+					case 81:
+					case 82:
+					case 83:
+					case 84:
+					case 85:
+					case 86:
+					case 87:
+					case 88:
+					case 89:
+					case 90:
+					case 91:
+					case 92:
+					case 93:
+					case 94:
+					case 95:
+					case 96:
+					case 97:
+					case 98:
+					case 99:
+					case 100:
+					case 101:
+					case 102:
+					case 103:
+					case 104:
+					case 105: offset += 2; break;
+					case 106:
+					case 107:
+					case 108:
+					case 109: offset += 3; break;
+					case 110: offset += 1 + CodeTable[offset += +1] * 6; break;
+					case 111: offset += 1 + CodeTable[offset += +1]; break;
+					case 112: offset += 5 + CodeTable[offset += +1]; break;
+					case 114:
+					case 115:
+					case 116:
+					case 117: offset += 1; break;
+					case 122:
+					case 123:
+					case 124:
+					case 125:
+					case 126:
+					case 127:
+					case 128:
+					case 129:
+					case 130:
+					case 131:
+					case 132:
+					case 133:
+					case 134:
+					case 135:
+					case 136:
+					case 137: returnpos = offset; break;
+				}
+				offset += 1;
+			}
+			GetFunctionCode();
+		}
+
+		void AddFunction(int start1, int start2)
+		{
+			byte namelen = CodeTable[start1 + 4];
+			string name = "";
+
+			if (namelen > 0)
+			{
+				for (int i = 0; i < namelen; i++)
+				{
+					try
+					{
+						name += (char)CodeTable[start1 + 5 + i];
+					}
+					catch
+					{
+						name = "Function_" + Functions.Count.ToString();
+					}
+				}
+			}
+			else if (start1 == 0)
+				name = "main";
+			else
+				name = "Function_" + Functions.Count.ToString();
+
+			if (name.StartsWith("0~"))
+				name = name.Replace("0~", "static ");
+
+			int pcount = CodeTable[start1 + 1];
+			int tmp1 = CodeTable[start1 + 2], tmp2 = CodeTable[start1 + 3];
+			int vcount = (tmp1 << 0x8) | tmp2;
+
+			if (vcount < 0)
+			{
+				throw new Exception("Well this shouldn't have happened");
+			}
+			int temp = start1 + 5 + namelen;
+
+			while (!IsReturnInstruction(temp))
+			{
+				switch (CodeTable[temp])
+				{
+					case 37: temp += 1; break;
+					case 38: temp += 2; break;
+					case 39: temp += 3; break;
+					case 40: temp += 4; break;
+					case 41: temp += 4; break;
+					case 44: temp += 2; break;
+					case 45: throw new Exception("OpCode 'enter' was unexpected");
+					case 46: throw new Exception("OpCode 'return' was unexpected");
+					case 52: temp += 1; break;
+					case 53: temp += 1; break;
+					case 54: temp += 1; break;
+					case 55: temp += 1; break;
+					case 56: temp += 1; break;
+					case 57: temp += 1; break;
+					case 58: temp += 1; break;
+					case 59: temp += 1; break;
+					case 60: temp += 1; break;
+					case 61: temp += 1; break;
+					case 62: temp += 1; break;
+					case 63: temp += 1; break;
+					case 64: temp += 1; break;
+					case 65: temp += 2; break;
+					case 66: temp += 2; break;
+					case 67: temp += 2; break;
+					case 68: temp += 2; break;
+					case 69: temp += 2; break;
+					case 70: temp += 2; break;
+					case 71: temp += 2; break;
+					case 72: temp += 2; break;
+					case 73: temp += 2; break;
+					case 74: temp += 2; break;
+					case 75: temp += 2; break;
+					case 76: temp += 2; break;
+					case 77: temp += 2; break;
+					case 78: temp += 2; break;
+					case 79: temp += 2; break;
+					case 80: temp += 2; break;
+					case 81: temp += 2; break;
+					case 82: temp += 2; break;
+					case 83: temp += 2; break;
+					case 84: temp += 2; break;
+					case 85: temp += 2; break;
+					case 86: temp += 2; break;
+					case 87: temp += 2; break;
+					case 88: temp += 2; break;
+					case 89: temp += 2; break;
+					case 90: temp += 2; break;
+					case 91: temp += 2; break;
+					case 92: temp += 2; break;
+					case 93: temp += 2; break;
+					case 94: temp += 2; break;
+					case 95: temp += 2; break;
+					case 96: temp += 2; break;
+					case 97: temp += 2; break;
+					case 98: temp += 2; break;
+					case 99: temp += 2; break;
+					case 100: temp += 2; break;
+					case 101: temp += 2; break;
+					case 102: temp += 2; break;
+					case 103: temp += 2; break;
+					case 104: temp += 2; break;
+					case 105: temp += 2; break;
+					case 106: temp += 3; break;
+					case 107: temp += 3; break;
+					case 108: temp += 3; break;
+					case 109: temp += 3; break;
+					case 110: temp += 1 + CodeTable[temp + 1] * 6; break;
+					case 111: temp += 1 + CodeTable[temp + 1]; break;
+					case 112: temp += 5 + CodeTable[temp + 1]; break;
+					case 114: temp += 1; break;
+					case 115: temp += 1; break;
+					case 116: temp += 1; break;
+					case 117: temp += 1; break;
+				}
+				temp += 1;
+			}
+
+			if (OpcodeReturn)
+			{
+				ReturnType = CodeTable[temp + 2];
+			}
+
+			int Location = start2;
+			if (start1 == start2)
+				Functions.Add(new Function(this, name, pcount, vcount, ReturnType, Location, -1));
+			else
+				Functions.Add(new Function(this, name, pcount, vcount, ReturnType, Location, start1));
+		}
+
+		public void GetFunctionCode()
+		{
+			for (int i = 0; i < Functions.Count; i++)
+			{
+				int start = Functions[i].MaxLocation;
+				int end = CodeTable.Count;
+
+				if (i + 1 < Functions.Count)
+					end = Functions[i + 1].Location;
+
+				if (end > start)
+					Functions[i].CodeBlock = CodeTable.GetRange(start, end - start);
+				else
+					Functions[i].CodeBlock = CodeTable.GetRange(start, start - end);
+			}
+		}
+
+		public bool IsReturnInstruction(int temp)
+		{
+			switch (CodeTable[temp])
+			{
+				case 123:
+				case 127:
+				case 131:
+				case 135:
+					ReturnType = 1;
+					OpcodeReturn = false;
+					break;
+				case 124:
+				case 128:
+				case 132:
+				case 136:
+					ReturnType = 2;
+					OpcodeReturn = false;
+					break;
+				case 125:
+				case 129:
+				case 133:
+				case 137:
+					ReturnType = 3;
+					OpcodeReturn = false;
+					break;
+				case 46:
+					OpcodeReturn = true;
+					break;
+				default:
+					ReturnType = 0;
+					OpcodeReturn = false;
+					break;
+			}
+			return CodeTable[temp] == 46 || (CodeTable[temp] > 121 && CodeTable[temp] < 138);
+		}
+	}
+}

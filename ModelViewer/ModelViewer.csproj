@@ -40,7 +40,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="HelixToolkit.Wpf">
-      <HintPath>..\..\RDR Model Viewer\RDR Model Viewer\bin\x86\Debug\netcoreapp3.1\HelixToolkit.Wpf.dll</HintPath>
+      <HintPath>..\Magic_RDR\bin\Debug\Assemblies\HelixToolkit.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

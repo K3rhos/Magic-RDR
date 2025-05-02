@@ -631,7 +631,83 @@ namespace Magic_RDR
             }
         }
 
-        private void extractResourceButton_Click(object sender, EventArgs e)
+		private void exportScriptButton_Click(object sender, EventArgs e)
+		{
+			if (listView.SelectedItems.Count <= 0)
+			{
+				return;
+			}
+
+			bool multiSelect = (listView.SelectedItems.Count > 1);
+
+			if (multiSelect)
+			{
+				FolderBrowserDialog folderDialog = new FolderBrowserDialog();
+				folderDialog.Description = "Select a folder to export files to";
+				folderDialog.ShowNewFolderButton = true;
+
+				if (folderDialog.ShowDialog() == DialogResult.OK)
+				{
+					foreach (ListViewItem selectedItem in listView.SelectedItems)
+					{
+						if (selectedItem.Tag is RPF6.RPF6TOC.TOCSuperEntry tag)
+						{
+							string scriptName = tag.Entry.Name.Replace(".xsc", ".c").Replace(".wsc", ".c");
+
+							try
+							{
+								ScriptDecompiler scriptDecompiler = new ScriptDecompiler(tag);
+
+								scriptDecompiler.Export($"{folderDialog.SelectedPath}\\{scriptName}", true);
+							}
+							catch (Exception ex)
+							{
+								MessageBox.Show(string.Format("Could not export file.\r\nError:\r\n\r\n{0}\r\n\r\nStack Trace: {1}", ex.Message, ex.StackTrace), "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+							}
+						}
+					}
+
+					SystemSounds.Asterisk.Play();
+
+					MessageBox.Show("Successfully saved selected files !", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				}
+			}
+			else
+			{
+				ListViewItem selectedItem = listView.SelectedItems[0];
+
+				if (selectedItem.Tag is RPF6.RPF6TOC.TOCSuperEntry tag)
+				{
+					string scriptName = tag.Entry.Name.Replace(".xsc", ".c").Replace(".wsc", ".c");
+
+					SaveFileDialog saveFileDialog = new SaveFileDialog();
+					saveFileDialog.Title = string.Format("Export {0}", scriptName);
+					saveFileDialog.DefaultExt = Path.GetExtension(scriptName);
+					saveFileDialog.Filter = saveFileDialog.DefaultExt == "" ? "" : saveFileDialog.DefaultExt.ToUpper() + " Files (*." + saveFileDialog.DefaultExt + ")|*." + saveFileDialog.DefaultExt;
+					saveFileDialog.FileName = scriptName;
+
+					if (saveFileDialog.ShowDialog() == DialogResult.OK)
+					{
+						try
+						{
+							ScriptDecompiler scriptDecompiler = new ScriptDecompiler(tag);
+
+							scriptDecompiler.Export(saveFileDialog.FileName, true);
+
+							SystemSounds.Asterisk.Play();
+
+							MessageBox.Show("Successfully saved file !", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+						}
+						catch (Exception ex)
+						{
+							MessageBox.Show(string.Format("Could not export file.\r\nError:\r\n\r\n{0}\r\n\r\nStack Trace: {1}", ex.Message, ex.StackTrace), "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+						}
+					}
+				}
+			}
+		}
+
+		private void extractResourceButton_Click(object sender, EventArgs e)
         {
             if (listView.SelectedItems.Count <= 0)
             {
@@ -671,7 +747,7 @@ namespace Magic_RDR
             }
         }
 
-        private void extractFileButton_Click(object sender, EventArgs e)
+		private void extractFileButton_Click(object sender, EventArgs e)
         {
             if (listView.SelectedItems.Count <= 0)
             {

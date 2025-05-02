@@ -1,4 +1,4 @@
-﻿
+
 using System.Windows.Forms;
 
 namespace Magic_RDR
@@ -48,6 +48,7 @@ namespace Magic_RDR
             this.removeDirectoryButton = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.extractFileButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportScriptButton = new System.Windows.Forms.ToolStripMenuItem();
             this.extractResourceButton = new System.Windows.Forms.ToolStripMenuItem();
             this.extractTheseFilesButton = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
@@ -147,6 +148,7 @@ namespace Magic_RDR
             this.removeDirectoryButton,
             this.toolStripSeparator4,
             this.extractFileButton,
+            this.exportScriptButton,
             this.extractResourceButton,
             this.extractTheseFilesButton,
             this.toolStripSeparator5,
@@ -224,10 +226,18 @@ namespace Magic_RDR
             this.extractFileButton.Size = new System.Drawing.Size(194, 22);
             this.extractFileButton.Text = "Extract File";
             this.extractFileButton.Click += new System.EventHandler(this.extractFileButton_Click);
-            // 
-            // extractResourceButton
-            // 
-            this.extractResourceButton.Image = global::Magic_RDR.Properties.Resources.package_go;
+			// 
+			// exportScriptButton
+			// 
+			this.exportScriptButton.Image = global::Magic_RDR.Properties.Resources.package_go;
+			this.exportScriptButton.Name = "exportScriptButton";
+			this.exportScriptButton.Size = new System.Drawing.Size(194, 22);
+			this.exportScriptButton.Text = "Export Script";
+			this.exportScriptButton.Click += new System.EventHandler(this.exportScriptButton_Click);
+			// 
+			// extractResourceButton
+			// 
+			this.extractResourceButton.Image = global::Magic_RDR.Properties.Resources.package_go;
             this.extractResourceButton.Name = "extractResourceButton";
             this.extractResourceButton.Size = new System.Drawing.Size(194, 22);
             this.extractResourceButton.Text = "Extract Resource";
@@ -641,6 +651,7 @@ namespace Magic_RDR
         private System.Windows.Forms.ToolStripMenuItem extractTheseFilesButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripMenuItem viewFilePropertiesButton;
+        private System.Windows.Forms.ToolStripMenuItem exportScriptButton;
         private System.Windows.Forms.ToolStripMenuItem extractResourceButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripMenuItem copyPathButton;

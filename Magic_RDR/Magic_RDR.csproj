@@ -92,16 +92,13 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="FastColoredTextBox">
-      <HintPath>bin\x86\Debug\Assemblies\FastColoredTextBox.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>bin\Debug\Assemblies\FastColoredTextBox.dll</HintPath>
     </Reference>
     <Reference Include="HelixToolkit.Wpf">
-      <HintPath>bin\x86\Debug\Assemblies\HelixToolkit.Wpf.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>bin\Debug\Assemblies\HelixToolkit.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib">
-      <HintPath>bin\x86\Debug\Assemblies\ICSharpCode.SharpZipLib.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>bin\Debug\Assemblies\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.DirectX, Version=1.0.1901.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">
       <SpecificVersion>False</SpecificVersion>
@@ -124,12 +121,10 @@
       <HintPath>bin\x86\Debug\Assemblies\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Pfim">
-      <HintPath>bin\x86\Debug\Assemblies\Pfim.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>bin\Debug\Assemblies\Pfim.dll</HintPath>
     </Reference>
     <Reference Include="PikIO">
-      <HintPath>bin\x86\Debug\Assemblies\PikIO.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>bin\Debug\Assemblies\PikIO.dll</HintPath>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -207,6 +202,8 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="RPF\XMA2DecoderStream.cs" />
+    <Compile Include="Scripts\ScriptDecompiler.cs" />
+    <Compile Include="Scripts\ScriptFile.cs" />
     <Compile Include="Viewers\AudioViewerForm.cs">
       <SubType>Form</SubType>
     </Compile>
